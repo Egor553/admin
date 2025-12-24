@@ -271,27 +271,33 @@ const App: React.FC = () => {
       <div className="w-24 h-24 bg-green-500 rounded-[2.5rem] flex items-center justify-center text-white shadow-xl shadow-green-100 mb-8 animate-bounce">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><polyline points="20 6 9 17 4 12" /></svg>
       </div>
-      <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2 text-black">Запись подтверждена!</h2>
-      <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-8">Теперь последний шаг</p>
+      <h2 className="text-3xl font-black text-gray-900 tracking-tight mb-2 text-black uppercase">Успешно!</h2>
+      <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mb-8">Запись подтверждена</p>
       
-      <div className="bg-blue-600 p-8 rounded-[2.5rem] shadow-2xl shadow-blue-200 mb-8 w-full border-4 border-white ring-2 ring-blue-50">
-        <p className="text-white/80 font-black text-[10px] uppercase tracking-[0.2em] mb-4">Отправьте боту сообщение:</p>
-        <div className="bg-white p-6 rounded-2xl shadow-inner mb-4 flex items-center justify-center">
-           <p className="text-4xl font-black text-blue-600 uppercase tracking-tighter">ГОТОВО</p>
+      <div className="bg-blue-600 p-8 rounded-[3rem] shadow-2xl shadow-blue-200 mb-8 w-full border-4 border-white ring-4 ring-blue-50 animate-pulse-slow">
+        <p className="text-white font-black text-sm uppercase tracking-widest mb-6">Последний шаг!</p>
+        <div className="bg-white py-6 px-4 rounded-3xl shadow-inner mb-6 flex flex-col items-center justify-center">
+           <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-2">Напишите боту:</p>
+           <p className="text-5xl font-black text-blue-600 uppercase tracking-tighter">ГОТОВО</p>
         </div>
-        <p className="text-blue-100 text-[11px] font-bold leading-relaxed uppercase">Без этого слова запись не будет завершена!</p>
+        <p className="text-blue-50 text-[11px] font-black leading-tight uppercase px-4">БЕЗ ЭТОГО СООБЩЕНИЯ ЗАПИСЬ НЕ СОХРАНИТСЯ В БОТЕ!</p>
       </div>
 
       <button 
         onClick={() => { 
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText("Готово");
-          }
+          try {
+            const el = document.createElement('textarea');
+            el.value = "Готово";
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+          } catch (e) {}
           window.Telegram?.WebApp?.close(); 
         }} 
-        className="w-full py-5 bg-black text-white rounded-2xl font-black text-lg shadow-xl active:scale-95 transition-all"
+        className="w-full py-6 bg-black text-white rounded-[2rem] font-black text-xl shadow-2xl active:scale-95 transition-all uppercase tracking-tight"
       >
-        Скопировать "Готово" и закрыть
+        Скопировать "Готово" и выйти
       </button>
     </div>
   );
@@ -392,11 +398,11 @@ const App: React.FC = () => {
                <div className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Ваш слот</div>
                <div className="text-blue-900 font-black text-lg">{selectedSlot && new Date(selectedSlot).toLocaleString('ru-RU', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}</div>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 text-black">
               <label className="text-[10px] font-black text-gray-400 uppercase ml-2 tracking-widest">Как вас зовут?</label>
               <input type="text" placeholder="Имя и Фамилия" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-5 bg-gray-50 rounded-2xl font-black text-black outline-none border-2 border-transparent focus:border-blue-500" />
             </div>
-            <div className="space-y-1">
+            <div className="space-y-1 text-black">
               <label className="text-[10px] font-black text-gray-400 uppercase ml-2 tracking-widest">Контактный телефон</label>
               <input type="tel" placeholder="+7 (999) 000-00-00" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full p-5 bg-gray-50 rounded-2xl font-black text-black outline-none border-2 border-transparent focus:border-blue-500" />
             </div>
@@ -419,7 +425,7 @@ const App: React.FC = () => {
           />
           <div className="p-5 flex-1 overflow-y-auto">
             {adminTab === 'create' ? (
-              <div className="bg-white p-6 rounded-[2.5rem] space-y-6 border border-gray-100 shadow-sm">
+              <div className="bg-white p-6 rounded-[2.5rem] space-y-6 border border-gray-100 shadow-sm text-black">
                 <div className="flex bg-gray-100 p-1 rounded-2xl">
                   <button onClick={() => setAdminConfig({...adminConfig, type: 'Offline'})} className={`flex-1 py-3 rounded-xl font-black text-xs ${adminConfig.type === 'Offline' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400'}`}>📍 Оффлайн</button>
                   <button onClick={() => setAdminConfig({...adminConfig, type: 'Online'})} className={`flex-1 py-3 rounded-xl font-black text-xs ${adminConfig.type === 'Online' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-400'}`}>🌐 Онлайн</button>
@@ -435,7 +441,7 @@ const App: React.FC = () => {
                   {renderCalendarGrid(
                     (date) => handleAdminDateClick(date),
                     (date) => adminRange.start?.toDateString() === date.toDateString() || adminRange.end?.toDateString() === date.toDateString(),
-                    (date) => adminRange.start && adminRange.end && date > adminRange.start && date < adminRange.end
+                    (date) => Boolean(adminRange.start && adminRange.end && date.getTime() > adminRange.start.getTime() && date.getTime() < adminRange.end.getTime())
                   )}
                 </div>
 
@@ -443,7 +449,7 @@ const App: React.FC = () => {
                    <div className="space-y-1"><label className="text-[9px] font-black text-gray-400 ml-1 uppercase">Старт</label><input type="time" value={adminConfig.startTime} onChange={e => setAdminConfig({...adminConfig, startTime: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold border border-gray-100 text-black" /></div>
                    <div className="space-y-1"><label className="text-[9px] font-black text-gray-400 ml-1 uppercase">Конец</label><input type="time" value={adminConfig.endTime} onChange={e => setAdminConfig({...adminConfig, endTime: e.target.value})} className="w-full p-3 bg-gray-50 rounded-xl font-bold border border-gray-100 text-black" /></div>
                 </div>
-                <div className="space-y-1"><label className="text-[9px] font-black text-gray-400 ml-1 uppercase">Интервал (мин)</label><input type="number" value={adminConfig.interval} onChange={e => setAdminConfig({...adminConfig, interval: parseInt(e.target.value) || 60})} className="w-full p-4 bg-gray-50 rounded-xl font-black border border-gray-100 text-black" /></div>
+                <div className="space-y-1 text-black"><label className="text-[9px] font-black text-gray-400 ml-1 uppercase">Интервал (мин)</label><input type="number" value={adminConfig.interval} onChange={e => setAdminConfig({...adminConfig, interval: parseInt(e.target.value) || 60})} className="w-full p-4 bg-gray-50 rounded-xl font-black border border-gray-100 text-black" /></div>
                 <button onClick={generateAdminSlots} disabled={actionLoading} className="w-full py-5 bg-black text-white rounded-2xl font-black shadow-xl active:scale-95 transition-all">Сгенерировать сетку</button>
               </div>
             ) : (
@@ -455,9 +461,9 @@ const App: React.FC = () => {
                   </div>
                 ) : (
                   Object.entries(adminGroupedSlots).map(([cityKey, dates]) => (
-                    <div key={cityKey} className="space-y-4 animate-fade-in">
+                    <div key={cityKey} className="space-y-4 animate-fade-in text-black">
                       <div className="flex items-center justify-between px-3 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-3 text-black">
                           <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center font-black">
                             {cityKey === 'online' ? '🌐' : '📍'}
                           </div>
@@ -475,12 +481,12 @@ const App: React.FC = () => {
                       </div>
                       
                       {Object.entries(dates).sort().map(([dateStr, slots]) => (
-                        <div key={dateStr} className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+                        <div key={dateStr} className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden text-black">
                           <div className="bg-gray-50 px-6 py-3 flex justify-between items-center border-b border-gray-100">
                             <span className="font-black text-xs text-black uppercase tracking-widest">{new Date(dateStr).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}</span>
                             <span className="text-[10px] bg-white border border-gray-200 text-gray-400 px-2 py-0.5 rounded-full font-bold">{slots.length}</span>
                           </div>
-                          <div className="p-4 grid grid-cols-4 gap-2">
+                          <div className="p-4 grid grid-cols-4 gap-2 text-black">
                             {slots.map(slot => (
                               <button 
                                 key={slot} 
